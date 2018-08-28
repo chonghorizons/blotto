@@ -4,23 +4,15 @@ var BattleRound = require('./BattleRound');
 var Player = require('./Player');
 
 class BattleSet {
-  constructor() {
+  constructor(numRounds) {
     this.isStarted=false;
     this.isFinished=false;
-    this.totalRounds=7;
+    this.totalRounds=numRounds;
     this.scores=[0,0,0]; // third index is ties
-    this.currentBattle={};
+    this.currentBattle=new BattleRound();
     this.oldBattles=[];
     this.winner=null;
     this.tieBreaker=null;
-  }
-
-  startSet() {
-    if (this.isStarted || this.isFinished) { throw "game already started2 or finished"; }
-    this.isStarted=true;
-    this.currentBattle=new BattleRound();
-    // console.assert(deck.length===0, "Error: deck not empty");
-    // console.assert(_.reduce(this.players, (memo, val, key)=> memo= memo+val.pile.length, 0), "52 cards not dealed correctly" )
   }
 
   sum(array) {
@@ -41,16 +33,17 @@ class BattleSet {
       return true;
     } else {
       return false;
+    }
   }
 
-  currentBattleRound() {
+  currentBattleRoundNumber() {
     if (this.isFinished) { return "gameFinished"};
     if (!this.isStarted) { return "notStarted"};
     return this.sum(this.scores) +1;
   }
 
   tryEndBattleRound() { // mixes battle stuff and set stuff. Need to re-read.
-    const winAndState= this.currentBattle.checkWinAndGetState();
+    const winAndState= this.currentBattle.checkWinAndReturnState();
     if (winAndState.winner!=="none") {
       this.scores[winAndState.winner]++;
       this.oldBattles.push(this.currentBattle)

@@ -55,7 +55,32 @@ class BattleRound {
     return readyState;
   }
 
-  checkWinAndGetState() {
+  winArray() {
+    return this.battlegrounds.map((ground)=> {
+      if (ground[0]>ground[1]) {
+        return 0;
+      } else if (ground[1]>ground[0]) {
+        return 1;
+      } else if (ground[1]==ground[0]) {
+        return 2;
+      } else {
+        throw new Error('checkWin is neither 0, 1, or 2=tie')
+      }
+    })
+  }
+
+  groundsWon(winArray) {
+    return winArray.reduce(
+      (acc, cur)=>{
+        if (cur===0) acc[0]=acc[0]+1;
+        if (cur===1) acc[1]=acc[1]+1;
+        return acc;
+      },
+      {0:0, 1:0}
+    )
+  }
+
+  checkWinAndReturnState() {
     console.log("checkWinAndGetState")
     let returnCheckWinAndGetState={
       readyState:"",
@@ -71,26 +96,9 @@ class BattleRound {
           returnCheckWinAndGetState.readyState[0]==='ready' &&
           returnCheckWinAndGetState.readyState[1]==='ready'
         ) {
-        returnCheckWinAndGetState.winArray=this.battlegrounds.map((ground)=> {
-          if (ground[0]>ground[1]) {
-            return 0;
-          } else if (ground[1]>ground[0]) {
-            return 1;
-          } else if (ground[1]==ground[0]) {
-            return 2;
-          } else {
-            throw new Error('checkWin is neither 0, 1, or 2=tie')
-          }
-        })
-        let groundsWon=returnCheckWinAndGetState.winArray.reduce(
-          (acc, cur)=>{
-            if (cur===0) acc[0]=acc[0]+1;
-            if (cur===1) acc[1]=acc[1]+1;
-            return acc;
-          },
-          {0:0, 1:0}
-        )
-        //console.log(groundsWon)
+        returnCheckWinAndGetState.winArray=this.winArray();
+        let groundsWon=this.groundsWon(returnCheckWinAndGetState.winArray)
+
         if (groundsWon[0]>groundsWon[1]) returnCheckWinAndGetState.winner=0;
         if (groundsWon[1]>groundsWon[0]) returnCheckWinAndGetState.winner=1;
         if (groundsWon[0]===groundsWon[1]) returnCheckWinAndGetState.winner=2;
@@ -100,8 +108,6 @@ class BattleRound {
         winArray: returnCheckWinAndGetState.winArray,
       }
     }
-    //console.log('line86=========')
-    //console.log(returnCheckWinAndGetState)
     return returnCheckWinAndGetState;
   }
 

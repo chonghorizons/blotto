@@ -12,6 +12,7 @@ var io = require('socket.io')(http);
 var _ = require('underscore');
 
 var giphyURLs = require('./public/giphy.json')
+const numSets=1;
 
 app.engine('hbs', exphbs({
   extname: 'hbs',
@@ -33,7 +34,7 @@ app.get('/', function(req, res) {
 var BattleRound = require('./BattleRound');
 var Player = require('./Player');
 var Match = require('./Match');
-var match = new Match();
+var match = new Match(numSets);
 var count = 0; // Number of active socket connections
 
 
@@ -54,15 +55,15 @@ io.on('connection', function(socket) {
   socket.on('disconnect', function () {
     console.log("DISCONNECT, RESET")
     count--;
-    match = new Match(); // yyyy set up 5 minutes for reconnect
-    // yyyyy for existing sockets, (re)attach them to the new Match
-    io.emit('StoCReset');
+    if (socket.user & !match.isStarted) { match.removePlayer(socket.user.username) };
+    if (match.isStarted) { io.emit('StoCReset');}
+    // maybe need to clear localstorage on client... not sure about socket.io and reconnect lifecycle
     io.emit('StoCUpdateGame', getGameState());
   });
 
   socket.on('CtoSReset', ()=> {
     console.log("RESETTING THE SERVER, NEW GAME")
-    match = new Match();
+    match = new Match(numSets);
     io.emit('StoCReset');
     io.emit('StoCUpdateGame', getGameState());
   })
@@ -98,8 +99,9 @@ io.on('connection', function(socket) {
 
   socket.on('CtoSSubmitSoldiersFight', function(amounts) {
     console.log('CtoSSubmitSoldiersFight', amounts);
-    match.currentBattle.setBattlegrounds(match.getPlayerIndex(socket.user.username), amounts);
-    match.tryEndBattleRound();
+    match.currentSet.currentBattle.setBattlegrounds(match.getPlayerIndex(socket.user.username), amounts);
+    match.currentSet.tryEndBattleRound();
+    match.tryEndSet();
     io.emit('StoCUpdateGame', getGameState());
     if (true || gameState.roundDidComplete()) {
       io.emit('StoCPwnedURLs', giphyURLs)   // just to winner

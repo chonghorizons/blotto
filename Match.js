@@ -1,6 +1,6 @@
 var _ = require('underscore');
 var persist = require('./persist');
-var BattleRound = require('./BattleRound');
+var BattleSet = require('./BattleSet');
 var Player = require('./Player');
 var uuidv4 = require('uuid/v4')
 
@@ -14,7 +14,7 @@ class Match {
     this.players=[null,null];
     this.totalSets=numSets;
     this.matchScores=[0,0]; // no ties allowed
-    this.currentSet={};
+    this.currentSet=new BattleSet(7);
     this.oldSets=[];
   }
 
@@ -22,7 +22,7 @@ class Match {
     if (this.isStarted || this.isFinished) { throw "Match already started2 or finished"; }
     if (this.players[0]===null || this.players[1]===null) { throw "need 2 or more players"}
     this.isStarted=true;
-    this.currentSet=new BattleSet();
+    this.currentSet.isStarted=true;
     // console.assert(deck.length===0, "Error: deck not empty");
     // console.assert(_.reduce(this.players, (memo, val, key)=> memo= memo+val.pile.length, 0), "52 cards not dealed correctly" )
   }
@@ -56,11 +56,21 @@ class Match {
     return newPlayer;
   }
 
+  removePlayer(username) {
+    console.log('removePlayer')
+    if (this.isStarted ) { throw "removing player erro because game already started"; }
+    if (username.trim().length===0) {throw "REMOVE: username is blank-ish";}
+    const foundPosition= this.players.map((x)=> (x ? x.username : null)).indexOf(username)
+    if (foundPosition!==-1) {
+      this.players[foundPosition]=null;
+    }
+  }
+
   sum(array) {
     return array.reduce((acc,cur)=>acc+cur);
   }
 
-  currentSet() {
+  currentSetNumber() {
     if (this.isFinished) { return "gameFinished"};
     if (!this.isStarted) { return "notStarted"};
     return this.sum(this.matchScores)+1;
@@ -71,31 +81,36 @@ class Match {
       this.matchScores[this.currentSet.winner]++;
       this.oldSets.push(this.currentSet)
       if (this.sum(this.matchScores)>=this.totalSets) {
-        this.currentSet={};
+        this.currentSet={}; // This may be a logic error; may need to have places check that currentSet exists.. or check that the matchIsFinished===false
         this.isFinished=true;
       } else {
-        this.currentSet= new BattleSet();
+        this.currentSet= new BattleSet(7);
+        this.currentSet.isStarted=true;
       }
     }
   }
 
   getMatchState() {
+    console.log("getMatchState")
+    //console.log(this)
     let returnObj = {
-      currentBattleRound: this.currentBattleSet().currentBattleRound(),
-      score: this.currentBattleSet().scores,
-      totalRounds:this..currentBattleSet().totalRounds,
-      oldBattles: this.currentBattleSet().oldBattles
+      currentBattleRoundNumber: this.currentSet.currentBattleRoundNumber ? this.currentSet.currentBattleRoundNumber() : "Game Done?!",
+      scores: this.currentSet.scores,
+      totalRounds: this.currentSet.totalRounds,
+      oldBattles: this.currentSet.oldBattles,
 
       totalSets:this.totalSets,
-      currentSet:this.currentBattleSet(),
+      currentSet:this.currentSet,
       matchIsFinished:this.isFinished,
       matchIsStarted:this.isStarted,
-      oldSets:this.oldBattles,
+      oldSets:this.oldSets,
+
+      matchScores: this.matchScores,
 
       playerNames: this.players.map(x=> x ? x.username : null),
 
     }
-    if (this.currentBattle.readyState) returnObj.readyState=this.currentBattle.readyState();
+    if (this.currentSet.currentBattle && this.currentSet.currentBattle.readyState) returnObj.readyState=this.currentSet.currentBattle.readyState();
     return returnObj;
   }
 }

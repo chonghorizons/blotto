@@ -37,7 +37,7 @@ $(document).ready(function() {
 
   socket.on('StoCInviteToJoin', function() {
     localStorage.setItem('id', ''); // reset the id in localStorage
-    var usernameInput=prompt("What is your username?");
+    var usernameInput=prompt("Pick a nickname \n or leave blank for random");
     console.log(usernameInput)
     if (usernameInput==="") usernameInput="RAND"+String(Math.floor(Math.random()*1000))
     socket.emit('CtoSUsername', usernameInput);
@@ -45,7 +45,7 @@ $(document).ready(function() {
     $('#joinGame').prop('disabled', true);
     $('#observeGame').prop('disabled', true);
     localStorage.setItem('id', usernameInput);
-    $("#messages-container").empty().prepend($("<h3>").text("waiting to get 2 players")).fadeTo(5000, 0.4)
+    $("#messages-container").empty().prepend($("<h3>").text("waiting to get 2 players")).fadeTo(5000, 0.8)
     username=usernameInput;
   });
 
@@ -64,8 +64,10 @@ $(document).ready(function() {
   });
 
   socket.on("StoCUpdateGame", function(matchState) {
+    console.log("Update:")
+    console.log(matchState)
     // If game has started, disable join buttons
-    if (matchState.isStarted) {
+    if (matchState.matchIsStarted) {
       // $('#joinGame').prop('disabled', true);
       // $('#observeGame').prop('disabled', true);
 
@@ -106,40 +108,67 @@ $(document).ready(function() {
     //
     //
     //
-    var displayMatchState=Object.assign({},matchState);
-    // displayMatchState.oldBattles.reverse(); // mutates
-    $("#games-state-container").empty().prepend($("<pre>").text(JSON.stringify(displayMatchState, null, 2)))
+    //
+    var yourUserIndex=matchState.playerNames.indexOf(username)
 
-    $("#messages-container").empty()
-    $("#messages-container").append($('<p>').text(`Round: ${displayMatchState.currentBattleRound}`))
-    var yourUserIndex=displayMatchState.playerNames.indexOf(username)
-    $("#messages-container").append($('<p>').text(`Score: ${displayMatchState.scores[0]} ${displayMatchState.playerNames[0]} // ${displayMatchState.scores[1]} ${displayMatchState.playerNames[1]} // ${displayMatchState.scores[2]} ties `))
-    if (displayMatchState.readyState && displayMatchState.readyState[0]!=displayMatchState.readyState[1]) {
-      // console.log(displayMatchState.readyState)
-      // console.log(displayMatchState.readyState[yourUserIndex])
-      (displayMatchState.readyState[yourUserIndex]==="notReady") ?
-        $("#messages-container").append($('<p>').text(`Hurry Up! The other player is waiting for you!`)) :
-        $("#messages-container").append($('<p>').text(`...waiting on the other player.`))
+
+    if (matchState.matchIsFinished) {
+      $("#games-state-container").empty()
+      $("#games-state-container").append($("<p>").text("most recent round:"))
+      $("#games-state-container").append($("<pre>").text(JSON.stringify(mostRecentRound, null, 2)))
+      $("#games-state-container").append($("<p>").text("full matchState"))
+      $("#games-state-container").append($("<pre>").text(JSON.stringify(matchState, null, 2)))
+      $("#messages-container").empty()
+      var winnerIndex;
+      if (matchState.matchScores[0]>matchState.matchScores[1]) winnerIndex=0;
+      if (matchState.matchScores[1]>matchState.matchScores[0]) winnerIndex=1;
+      var winnerDisplay="";
+      if (winnerIndex===yourUserIndex) {winnerDisplay=`${username} is the winner!`}
+      $("#messages-container").append($('<h3>').text(`Game over! ${winnerDisplay}`));
+      $("#messages-container").append($('<p>').text(`Final Set Score: ${matchState.matchScores}. Of ${matchState.totalSets} Total Sets`));
     }
 
+    if (!matchState.matchIsFinished && matchState.matchIsStarted) {
+      var mostRecentRound=Object.assign({},matchState.oldBattles[matchState.oldBattles.length-1]);
 
 
-    if (matchState.isStarted && matchState.currentBattleRound>1 && matchState.currentBattleRound!=window.state.currentBattleRound) {
-      var lastBattle=matchState.oldBattles[matchState.oldBattles.length-1];
-      console.log(lastBattle);
-      prevWinner= lastBattle.winState.winner
-      if (matchState.playerNames.indexOf(username)===lastBattle.winState.winner) {
-        var battleResultText='You won!!';
-        socket.emit('CtoSPwnedURLchosen' , randomGiphyURL()) // zzzz need to do a modal to allow the user to pick; or default to random after 3 seconds
-      } else if (lastBattle.winState.winner===2) {
-        var battleResultText='It was a tie!!!!!';
-      } else {
-        var battleResultText='...you lose';
+      $("#games-state-container").empty()
+      $("#games-state-container").append($("<p>").text("most recent round:"))
+      $("#games-state-container").append($("<pre>").text(JSON.stringify(mostRecentRound, null, 2)))
+      $("#games-state-container").append($("<p>").text("full matchState"))
+      $("#games-state-container").append($("<pre>").text(JSON.stringify(matchState, null, 2)))
+      $("#messages-container").empty()
+      $("#messages-container").append($('<p>').text(`Current Set Score: ${matchState.matchScores}. Of ${matchState.totalSets} Total Sets`))
+      $("#messages-container").append($('<p>').text(`BattleRound: ${matchState.currentBattleRoundNumber} of ${matchState.totalRounds}`))
+      $("#messages-container").append($('<p>').text(`Score: ${matchState.scores[0]} for ${matchState.playerNames[0]} // ${matchState.scores[1]} for ${matchState.playerNames[1]} // ${matchState.scores[2]} ties `))
+      if (matchState.readyState && matchState.readyState[0]!=matchState.readyState[1]) {
+        // console.log(matchState.readyState)
+        // console.log(matchState.readyState[yourUserIndex])
+        (matchState.readyState[yourUserIndex]==="notReady") ?
+          $("#messages-container").append($('<p>').text(`Hurry Up! The other player is waiting for you!`)) :
+          $("#messages-container").append($('<p>').text(`...waiting on the other player.`))
       }
-      $("#battle-result-container").empty().append($("<h2>").text(battleResultText)).fadeTo(5000, 0.2)
 
-      function randomGiphyURL() {
-        return giphyURLs[Math.floor(Math.random()*giphyURLs.length)]
+
+
+      if (matchState.currentBattleRoundNumber>1 && matchState.currentBattleRoundNumber!=window.state.currentBattleRoundNumber) {
+        var lastBattle=matchState.oldBattles[matchState.oldBattles.length-1];
+        console.log('line132, last battle')
+        console.log(lastBattle)
+        prevWinner= lastBattle.winState.winner
+        if (matchState.playerNames.indexOf(username)===lastBattle.winState.winner) {
+          var battleResultText='You won!!';
+          socket.emit('CtoSPwnedURLchosen' , randomGiphyURL()) // zzzz need to do a modal to allow the user to pick; or default to random after 3 seconds
+        } else if (lastBattle.winState.winner===2) {
+          var battleResultText='It was a tie!!!!!';
+        } else {
+          var battleResultText='...you lose';
+        }
+        $("#battle-result-container").empty().append($("<h2>").text(battleResultText)).fadeTo(5000, 0.0)
+
+        function randomGiphyURL() {
+          return giphyURLs[Math.floor(Math.random()*giphyURLs.length)]
+        }
       }
     }
     window.state = matchState;
