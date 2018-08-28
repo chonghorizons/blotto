@@ -11,40 +11,12 @@ class BattleSet {
     this.scores=[0,0,0]; // third index is ties
     this.currentBattle={};
     this.oldBattles=[];
+    this.winner=null;
+    this.tieBreaker=null;
   }
 
-  getPlayerIndex(username) {
-    return this.players.map(x=>x ? x.username : null).indexOf(username);
-  }
-
-  addPlayer(playerIndex, username, userId) {
-    console.log('addplayerEnter', playerIndex)
-    if (this.isStarted || this.isFinished) { throw "game already started1 or finished"; }
-    if (username.trim().length===0) {throw "username is blank-ish";}
-    if (this.players.map((x)=> (x ? x.username : null)).indexOf(username)!== -1) {throw "username is already in the game (including two different players with same username text)";}
-    if (playerIndex!==0 && playerIndex!==1 && playerIndex!==99) {throw "playerIndex needs to be 0 or 1 or 99 (anywhere)";}
-    if (this.players[playerIndex]!=null) {throw `already have a player in position ${playerIndex}`}
-    var newPlayer = userId ? new Player(username, userId) : new Player(username) ;
-    console.log('line30');
-    console.log(newPlayer);
-    if (playerIndex===99) {
-      if (this.players[0]===null) {
-        console.log('player1')
-        this.players[0]= newPlayer;
-      } else {
-        console.log('player2')
-        this.players[1]= newPlayer; // isStarted should handle the case when both players are defined. Don't need to recheck.
-      }
-    } else {
-      this.players[playerIndex]= newPlayer;
-    }
-    if (this.players[0]!==null && this.players[1]!==null) this.startMatch();
-    return newPlayer;
-  }
-
-  startMatch() {
+  startSet() {
     if (this.isStarted || this.isFinished) { throw "game already started2 or finished"; }
-    if (this.players[0]===null || this.players[1]===null) { throw "need 2 or more players"}
     this.isStarted=true;
     this.currentBattle=new BattleRound();
     // console.assert(deck.length===0, "Error: deck not empty");
@@ -55,13 +27,29 @@ class BattleSet {
     return array.reduce((acc,cur)=>acc+cur);
   }
 
+  setWinnerFinished() {
+    if (this.sum(this.scores)>=this.totalRounds) {
+      this.isFinished=true;
+      if (this.scores[0]>this.scores[1]) { this.winner=0; }
+      if (this.scores[0]<this.scores[1]) { this.winner=0; }
+      this.tieBreaker=false;
+
+      if (this.scores[0]===this.scores[1]) {
+        this.tieBreaker = true;
+        this.winner = Math.floor(Math.random()*2);
+      }
+      return true;
+    } else {
+      return false;
+  }
+
   currentBattleRound() {
     if (this.isFinished) { return "gameFinished"};
     if (!this.isStarted) { return "notStarted"};
     return this.sum(this.scores) +1;
   }
 
-  tryEndBattleRound() {
+  tryEndBattleRound() { // mixes battle stuff and set stuff. Need to re-read.
     const winAndState= this.currentBattle.checkWinAndGetState();
     if (winAndState.winner!=="none") {
       this.scores[winAndState.winner]++;
@@ -73,20 +61,6 @@ class BattleSet {
         this.currentBattle= new BattleRound();
       }
     }
-  }
-
-  getMatchState() {
-    let returnObj = {
-      isFinished:this.isFinished,
-      isStarted:this.isStarted,
-      totalRounds:this.totalRounds,
-      playerNames: this.players.map(x=> x ? x.username : null),
-      currentBattleRound:this.currentBattleRound(),
-      scores:this.scores,
-      oldBattles:this.oldBattles,
-    }
-    if (this.currentBattle.readyState) returnObj.readyState=this.currentBattle.readyState();
-    return returnObj;
   }
 }
 

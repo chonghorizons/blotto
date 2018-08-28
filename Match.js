@@ -39,14 +39,14 @@ class Match {
     if (playerIndex!==0 && playerIndex!==1 && playerIndex!==99) {throw "playerIndex needs to be 0 or 1 or 99 (anywhere)";}
     if (this.players[playerIndex]!=null) {throw `already have a player in position ${playerIndex}`}
     var newPlayer = userId ? new Player(username, userId) : new Player(username) ;
-    console.log('line30');
+    console.log('line30, addPlayer');
     console.log(newPlayer);
     if (playerIndex===99) {
       if (this.players[0]===null) {
-        console.log('player1')
+        console.log('^^^player1')
         this.players[0]= newPlayer;
       } else {
-        console.log('player2')
+        console.log('^^^player2')
         this.players[1]= newPlayer; // isStarted should handle the case when both players are defined. Don't need to recheck.
       }
     } else {
@@ -55,7 +55,6 @@ class Match {
     if (this.players[0]!==null && this.players[1]!==null) this.startMatch();
     return newPlayer;
   }
-
 
   sum(array) {
     return array.reduce((acc,cur)=>acc+cur);
@@ -68,9 +67,8 @@ class Match {
   }
 
   tryEndSet() {
-    const winAndState= this.currentSet.checkSetWinAndGetState(); // zzzzz need to write
-    if (winAndState.winner!=="none") {
-      this.matchScores[winAndState.winner]++;
+    if (this.currentSet.setWinnerFinished()) {
+      this.matchScores[this.currentSet.winner]++;
       this.oldSets.push(this.currentSet)
       if (this.sum(this.matchScores)>=this.totalSets) {
         this.currentSet={};
