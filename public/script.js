@@ -129,7 +129,17 @@ $(document).ready(function() {
     }
 
     if (!matchState.matchIsFinished && matchState.matchIsStarted) {
-      var mostRecentRound=Object.assign({},matchState.oldBattles[matchState.oldBattles.length-1]);
+      var mostRecentRound;
+      if (matchState.oldBattles.length>0) {
+        mostRecentRound=Object.assign({},matchState.oldBattles[matchState.oldBattles.length-1]);
+      } else {
+        if (matchState.oldSets.length>0) {
+          let prevSet = Object.assign({},matchState.oldSets[matchState.oldSets.length-1])
+          mostRecentRound=Object.assign({},prevSet.oldBattles[prevSet.oldBattles.length-1]);
+        } else {
+          mostRecentRound={};
+        }
+      }
 
 
       $("#games-state-container").empty()
