@@ -164,7 +164,7 @@ $(document).ready(function() {
         } else {
           var battleResultText='...you lose';
         }
-        $("#battle-result-container").empty().append($("<h2>").text(battleResultText)).fadeTo(5000, 0.0)
+        $("#battle-result-container").empty().append($("<h2>").text(battleResultText)).fadeTo(5000, 0.4)
 
         function randomGiphyURL() {
           return giphyURLs[Math.floor(Math.random()*giphyURLs.length)]

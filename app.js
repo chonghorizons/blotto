@@ -12,7 +12,7 @@ var io = require('socket.io')(http);
 var _ = require('underscore');
 
 var giphyURLs = require('./public/giphy.json')
-const numSets=1;
+const numSets=3;
 
 app.engine('hbs', exphbs({
   extname: 'hbs',
@@ -48,7 +48,8 @@ io.on('connection', function(socket) {
     console.log("matchStarted")
     socket.emit('StoCGameFull',)
   } else {
-    socket.emit('StoCInviteToJoin')
+    socket.emit('StoCInviteToJoin');
+    io.emit('StoCPwnedURLs', giphyURLs);
   }
   count++;
 
@@ -99,12 +100,12 @@ io.on('connection', function(socket) {
 
   socket.on('CtoSSubmitSoldiersFight', function(amounts) {
     console.log('CtoSSubmitSoldiersFight', amounts);
-    match.currentSet.currentBattle.setBattlegrounds(match.getPlayerIndex(socket.user.username), amounts);
+    if (match.currentSet.currentBattle && match.currentSet.currentBattle.setBattlegrounds) match.currentSet.currentBattle.setBattlegrounds(match.getPlayerIndex(socket.user.username), amounts);
     match.currentSet.tryEndBattleRound();
     match.tryEndSet();
     io.emit('StoCUpdateGame', getGameState());
     if (true || gameState.roundDidComplete()) {
-      io.emit('StoCPwnedURLs', giphyURLs)   // just to winner
+      //io.emit('StoCPwnedURLs', giphyURLs)   // ZZZZ later just to winner
     }
   })
 });

@@ -23,7 +23,7 @@ class BattleSet {
     if (this.sum(this.scores)>=this.totalRounds) {
       this.isFinished=true;
       if (this.scores[0]>this.scores[1]) { this.winner=0; }
-      if (this.scores[0]<this.scores[1]) { this.winner=0; }
+      if (this.scores[1]>this.scores[0]) { this.winner=1; }
       this.tieBreaker=false;
 
       if (this.scores[0]===this.scores[1]) {
