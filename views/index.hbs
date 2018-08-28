@@ -1,0 +1,75 @@
+<h1>BLOTTO!</h1>
+
+<div class="connecting-container">
+  Connecting to server...
+</div>
+<div class="col-xs-7 col-xs-offset-1">
+  <div class="main-container">
+    <!-- <button type="button" id="reset" class="btn btn-primary">
+      Reset
+    </button> -->
+
+    <ul>
+      <li class="num">
+        <span>Players in Game:</span> <span class="playerNames"></span>
+      </li>
+      <br>
+      <li id="currentPlayerUsername"></li>
+    </ul>
+
+    <div style="border: 4px red solid ">
+      <p>
+        messages
+      </p>
+      <div id="messages-container"></div>
+      <div id="battle-result-container"></div>
+    </div>
+
+
+    <div>
+      <h2>Play this round here</h2>
+      <p id="hundredChecker">
+
+      </p>
+      <ol>
+        <li class="inputGroupBattleground">
+          <input type="text" id="textInput1" value="33" onchange="updateInput('battleground1', this.value);" />
+          <input type="range" id="battleground1" min="0" max="100" value="33" step="1" class="slider" onchange="updateInput('textInput1', this.value);" />
+        </li>
+        <li class="inputGroupBattleground">
+          <input type="text" id="textInput2" value="33" onchange="updateInput('battleground2', this.value);"/>
+          <input type="range" id="battleground2" min="0" max="100" value="33" step="1" class="slider" onchange="updateInput('textInput2', this.value);" />
+        </li>
+        <li class="inputGroupBattleground">
+          <input type="text" id="textInput3" value="34" onchange="updateInput('battleground3', this.value);"/>
+          <input type="range" id="battleground3" min="0" max="100" value="34" step="1" class="slider" onchange="updateInput('textInput3', this.value);" />
+        </li>
+      </ol>
+      <button type="button" id="submitSoldiers" class="btn btn-success">Submit Soldiers to FIGHT!</button>
+    </div>
+    <script>
+      function updateInput(id, val) {
+        document.getElementById(id).value=val;
+        $('#hundredChecker').text(`Must add up to 100; Current value is ${Number($('#battleground1').val()) + Number($('#battleground2').val()) + Number($('#battleground3').val())}`)
+      }
+      $('#hundredChecker').text(`Must add up to 100; Current value is ${Number($('#battleground1').val()) + Number($('#battleground2').val()) + Number($('#battleground3').val())}`)
+    </script>
+
+
+    <div id="games-state-container"></div>
+  </div>
+</div>
+
+<div class="col-xs-3 col-xs-offset-1">
+  <div id="pwnBox">
+
+  </div>
+  <div id="bonusBox">
+    <h2>Bonus Items</h2>
+    <ul id="bonusList">
+      <li>
+        Dragon - need to programmatically generate this. Maybe with an icon/avatar
+      </li>
+    </ul>
+  </div>
+</div>

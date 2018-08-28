@@ -1,0 +1,16 @@
+#currentPlayerUsername {
+  font-size: 200%;
+}
+
+#bonusBox {
+  border: red 2px solid;
+}
+
+.inputGroupBattleground {
+  border: green 1px solid;
+  margin: 2px;
+}
+
+#pwnBox {
+  height:200px;
+}
