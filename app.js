@@ -12,7 +12,10 @@ var io = require('socket.io')(http);
 var _ = require('underscore');
 
 var giphyURLs = require('./public/giphy.json')
-const numSets=3;
+const config={
+  numSets: 3,
+  numRoundsPerSet: 5,
+};
 
 app.engine('hbs', exphbs({
   extname: 'hbs',
@@ -34,7 +37,7 @@ app.get('/', function(req, res) {
 var BattleRound = require('./BattleRound');
 var Player = require('./Player');
 var Match = require('./Match');
-var match = new Match(numSets);
+var match = new Match(config);
 var count = 0; // Number of active socket connections
 
 
@@ -64,7 +67,7 @@ io.on('connection', function(socket) {
 
   socket.on('CtoSReset', ()=> {
     console.log("RESETTING THE SERVER, NEW GAME")
-    match = new Match(numSets);
+    match = new Match(config);
     io.emit('StoCReset');
     io.emit('StoCUpdateGame', getGameState());
   })

@@ -4,18 +4,17 @@ var BattleSet = require('./BattleSet');
 var Player = require('./Player');
 var uuidv4 = require('uuid/v4')
 
-var debugFlag = false;
-
 class Match {
-  constructor(numSets, specialRules) {
+  constructor({numSets, numRoundsPerSet, specialParameters}) {
     this.matchId=uuidv4();
     this.isStarted=false;
     this.isFinished=false;
     this.players=[null,null];
     this.totalSets=numSets;
     this.matchScores=[0,0]; // no ties allowed
-    this.currentSet=new BattleSet(7);
+    this.currentSet=new BattleSet({numRoundsPerSet});
     this.oldSets=[];
+    this.numRoundsPerSet=numRoundsPerSet;
   }
 
   startMatch() {
@@ -84,7 +83,7 @@ class Match {
         this.currentSet={}; // This may be a logic error; may need to have places check that currentSet exists.. or check that the matchIsFinished===false
         this.isFinished=true;
       } else {
-        this.currentSet= new BattleSet(7);
+        this.currentSet= new BattleSet({numRoundsPerSet: this.numRoundsPerSet});
         this.currentSet.isStarted=true;
       }
     }

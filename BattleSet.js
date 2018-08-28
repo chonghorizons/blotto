@@ -4,10 +4,10 @@ var BattleRound = require('./BattleRound');
 var Player = require('./Player');
 
 class BattleSet {
-  constructor(numRounds) {
+  constructor({numRoundsPerSet}) {
     this.isStarted=false;
     this.isFinished=false;
-    this.totalRounds=numRounds;
+    this.totalRounds=numRoundsPerSet;
     this.scores=[0,0,0]; // third index is ties
     this.currentBattle=new BattleRound();
     this.oldBattles=[];
