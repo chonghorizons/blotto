@@ -104,6 +104,9 @@ io.on('connection', function(socket) {
 
   socket.on('CtoSSubmitSoldiersFight', function(amounts) {
     console.log('CtoSSubmitSoldiersFight', amounts);
+    if (!socket.user) {
+      return;
+    }
     if (match.currentSet.currentBattle && match.currentSet.currentBattle.setBattlegrounds) match.currentSet.currentBattle.setBattlegrounds(match.getPlayerIndex(socket.user.username), amounts);
     match.currentSet.tryEndBattleRound();
     match.tryEndSet();
