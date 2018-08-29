@@ -69,6 +69,7 @@ io.on('connection', function(socket) {
     console.log("RESETTING THE SERVER, NEW GAME")
     match = new Match(config);
     io.emit('StoCReset');
+    io.emit('StoCInviteToJoin');
     io.emit('StoCUpdateGame', getGameState());
   })
 
@@ -110,6 +111,10 @@ io.on('connection', function(socket) {
     if (true || gameState.roundDidComplete()) {
       //io.emit('StoCPwnedURLs', giphyURLs)   // ZZZZ later just to winner
     }
+  })
+
+  socket.on('CtoSConsoleLogMessage', function(string) {
+    console.log('CtoSConsoleLogMessage', string);
   })
 });
 
