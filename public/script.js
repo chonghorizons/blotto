@@ -4,6 +4,7 @@ socket = io();
 var username;
 var giphyURLs;
 
+
 $(document).ready(function() {
 
 
@@ -145,10 +146,15 @@ $(document).ready(function() {
 
       if (!matchState.matchIsFinished) {
         $("#games-state-container").empty()
-        $("#games-state-container").append($("<p>").text("most recent round:"))
-        $("#games-state-container").append($("<pre>").text(JSON.stringify(mostRecentRound, null, 2)))
         $("#games-state-container").append($("<p>").text("full matchState"))
         $("#games-state-container").append($("<pre>").text(JSON.stringify(matchState, null, 2)))
+        $("#lastRound-container").empty()
+        $("#lastRound-container").append($("<p>").text("most recent round:"))
+        var roundDisplayText;
+        if (mostRecentRound.battlegrounds) {
+          roundDisplayText=JSON.stringify(mostRecentRound.battlegrounds.map(x=>x[0]))+"\n"+JSON.stringify(mostRecentRound.battlegrounds.map(x=>x[1]))
+        }
+        $("#lastRound-container").append($("<pre>").text(roundDisplayText))
         $("#messages-container").empty()
         $("#messages-container").append($('<p>').text(`Current Set Score: ${matchState.matchScores}. Of ${matchState.totalSets} Total Sets`))
         $("#messages-container").append($('<p>').text(`BattleRound: ${matchState.currentBattleRoundNumber} of ${matchState.totalRounds}`))
@@ -161,8 +167,6 @@ $(document).ready(function() {
             $("#messages-container").append($('<p>').text(`...waiting on the other player.`))
         }
       }
-
-
 
 
       if ((matchState.oldSets.length>0 || matchState.currentBattleRoundNumber>1) && matchState.currentBattleRoundNumber!=window.state.currentBattleRoundNumber) {
@@ -178,7 +182,6 @@ $(document).ready(function() {
         prevWinner= lastBattle.winState.winner
         if (matchState.playerNames.indexOf(username)===lastBattle.winState.winner) {
           var battleResultText='You won!!';
-          socket.emit('CtoSPwnedURLchosen' , randomGiphyURL()) // zzzz need to do a modal to allow the user to pick; or default to random after 3 seconds
         } else if (lastBattle.winState.winner===2) {
           var battleResultText='It was a tie!!!!!';
         } else {
@@ -190,9 +193,6 @@ $(document).ready(function() {
           $("#battle-result-container").fadeTo(1000,0)
         }
 
-        function randomGiphyURL() {
-          return giphyURLs[Math.floor(Math.random()*giphyURLs.length)]
-        }
       }
     }
     window.state = matchState;
@@ -200,12 +200,24 @@ $(document).ready(function() {
 
   socket.on("StoCPwnedURLs", function(urlArray) {
     giphyURLs=urlArray;
+    socket.emit('CtoSPwnedURL' , "https://media.giphy.com/media/XtcfqdBrHEa4g/giphy.gif")
+    // modal to pick one of 3 gifs
+    $('img#pwn1').attr("src",urlArray[0]).height("auto").width(200)
+    $('img#pwn2').attr("src",urlArray[1]).height("auto").width(200)
+    $('img#pwn3').attr("src",urlArray[2]).height("auto").width(200)
+    $('#pwnModal').modal('toggle')
   })
 
   socket.on("StoCDisplayPwn", function(url) {
+    console.log("PwnBox")
     $('#pwnBox').empty(); // pwnBox shouldn't empty on streak
     myImage=$('<img>').attr("src",url).height("auto").width(200)
     $('#pwnBox').append(myImage);
+  })
+
+  socket.on("StoCDisplayPwnAwesome", function(url) {
+    $('img#Awesome').attr("src",url).height("auto").width("100%")
+    $('#pwnAwesomeModal').modal('toggle')
   })
 
   socket.on('disconnect', function() {

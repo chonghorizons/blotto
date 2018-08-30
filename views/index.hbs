@@ -3,14 +3,66 @@
     <h1>BLOTTO!</h1>
 </div>
 
+<script>
+  function randomPwnPick() {
+    pickPwn(Math.floor(Math.random()*3)+1);
+  }
+
+  function pickPwn(i) {
+    console.log("PickPwn")
+    socket.emit('CtoSPwnedURLchosen' , $(`img#pwn${i}`).attr("src"));
+    $("#pwnModal").modal("hide");
+  }
+</script>
+
+<!-- Modal -->
+<div class="modal fade" id="pwnModal" tabindex="-1" role="dialog" aria-labelledby="pwnModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="pwnModalLabel">Click on one of these 3 "brag" images</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <img id="pwn1" src="https://media.giphy.com/media/XdHbUa7eL3DTW/giphy.gif" onclick="pickPwn(1);" />
+        <img id="pwn2" src="https://media.giphy.com/media/5G1vG9yWROql2/giphy.gif" onclick="pickPwn(2);"/>
+        <img id="pwn3" src="https://media.giphy.com/media/WYl2CrfYd0DQY/giphy.gif" onclick="pickPwn(3);"/>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="randomPwnPick();">Random</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="pwnAwesomeModal" tabindex="-1" role="dialog" aria-labelledby="pwnAwesomeModal" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="pwnAwesomeModal">Winner picked this "Brag"</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <img id="Awesome" src="" />
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Dismiss</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="connecting-container">
   Connecting to server...
 </div>
 
 <div class="col-sm-3 col-sm-offset-1">
-  <div id="pwnBox">
-
-  </div>
   <div id="bonusBox">
     <h2>Bonus Items</h2>
     <h4>Use once per *set*</h4>
@@ -20,6 +72,9 @@
       </li>
     </ul>
   </div>
+  <div id="pwnBox"></div>
+  <div id="lastRound-container"></div>
+
 </div>
 
 <div class="col-sm-7 col-sm-offset-1">

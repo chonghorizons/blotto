@@ -38,6 +38,9 @@ var BattleRound = require('./BattleRound');
 var Player = require('./Player');
 var Match = require('./Match');
 var match = new Match(config);
+var BragList = require('./BragList');
+var bragList = new BragList({});
+bragList.addBrags(giphyURLs);
 var count = 0; // Number of active socket connections
 
 
@@ -52,7 +55,7 @@ io.on('connection', function(socket) {
     socket.emit('StoCGameFull',)
   } else {
     socket.emit('StoCInviteToJoin');
-    io.emit('StoCPwnedURLs', giphyURLs);
+    // io.emit('StoCPwnedURLs', giphyURLs);
   }
   count++;
 
@@ -99,6 +102,11 @@ io.on('connection', function(socket) {
   });
 
   socket.on('CtoSPwnedURLchosen', url => {
+      io.emit('StoCDisplayPwnAwesome', url)
+      io.emit('StoCDisplayPwn', url)
+  })
+
+  socket.on('CtoSPwnedURL', url => {
     io.emit('StoCDisplayPwn', url)
   })
 
@@ -107,12 +115,58 @@ io.on('connection', function(socket) {
     if (!socket.user) {
       return;
     }
-    if (match.currentSet.currentBattle && match.currentSet.currentBattle.setBattlegrounds) match.currentSet.currentBattle.setBattlegrounds(match.getPlayerIndex(socket.user.username), amounts);
-    match.currentSet.tryEndBattleRound();
-    match.tryEndSet();
-    io.emit('StoCUpdateGame', getGameState());
-    if (true || gameState.roundDidComplete()) {
-      //io.emit('StoCPwnedURLs', giphyURLs)   // ZZZZ later just to winner
+    if (match.currentSet.currentBattle && match.currentSet.currentBattle.setBattlegrounds) {
+      match.currentSet.currentBattle.setBattlegrounds(
+        match.getPlayerIndex(socket.user.username),
+        amounts
+      );
+      var bothAreReady=getGameState().readyState[0]==="ready" && getGameState().readyState[1]==="ready"  // zzzzz may not work is there is async on the setBattlegrounds
+      if (bothAreReady) {
+        match.currentSet.tryEndBattleRound();
+        // send pwnedURLs just to the winner
+        //
+        function findClientsSocket(roomId, namespace) {
+          var res = []
+          // the default namespace is "/"
+          , ns = io.of(namespace ||"/");
+
+          if (ns) {
+              for (var id in ns.connected) {
+                  if(roomId) {
+                      var index = ns.connected[id].rooms.indexOf(roomId);
+                      if(index !== -1) {
+                          res.push(ns.connected[id]);
+                      }
+                  } else {
+                      res.push(ns.connected[id]);
+                  }
+              }
+          }
+          return res;
+        }
+
+        function getWinnerSocket(gameState) {
+          let winnerIndex = gameState.currentSet.oldBattles[gameState.currentSet.oldBattles.length-1].winState.winner;
+          console.log('124')
+          console.log(winnerIndex)
+          if (winnerIndex===1 || winnerIndex===0) {
+            return findClientsSocket().filter(x => x.user.username===gameState.playerNames[winnerIndex]);
+          } else {
+            return [];
+          }
+        }
+
+        let winnerSocket=getWinnerSocket(getGameState());
+        console.log('line133')
+        console.log(winnerSocket)
+        if (winnerSocket.length>=1) {
+          winnerSocket[0].emit('StoCPwnedURLs', bragList.getRandomBrags(3))
+        }
+        match.tryEndSet();
+        io.emit('StoCUpdateGame', getGameState());
+      } else {
+        io.emit('StoCUpdateGame', getGameState());
+      }
     }
   })
 

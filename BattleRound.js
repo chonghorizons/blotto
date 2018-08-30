@@ -33,7 +33,7 @@ class BattleRound {
   setBattlegrounds(playerIndex, amounts) {
     if (!this.checkAmounts(amounts)) {
       console.log('Amounts', this.checkAmounts(amounts))
-      throw new Error('amounts don\'t add up to 100')
+      return new Error('amounts don\'t add up to 100');
     }
     for (let i=0; i<amounts.length; i++) {
       this.battlegrounds[i][playerIndex]=amounts[i];
